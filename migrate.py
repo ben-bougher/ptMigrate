@@ -12,10 +12,10 @@ Class for migrating data to the new PickThis
 dummy_password = "new_user"
 
 
-def data_from_url(url):
+def data_from_url(url, width, height):
 
     im = Image.open(cStringIO.StringIO(urllib.urlopen(url).read()))
-
+    im = im.resize((width, height))
     temp = tempfile.NamedTemporaryFile(prefix='tmp', suffix='.png')
     im.save(temp)
     return({"file": open(temp.name, 'rb')})
@@ -38,7 +38,7 @@ def convert_interps(data):
                 new_data.append([])
             new_data[interp].append(point)
             
-    return new_data
+    return filter(None, new_data)
 
 
 class PTMigrate(object):
@@ -70,8 +70,10 @@ class PTMigrate(object):
         for user in user_data:
 
             try:
-                create_user_url = "{api}/register".format(api=self.new_api)
-                reg = requests.put(create_user_url,
+                #create_user_url = "{api}/register".format(api=self.new_api)
+                print(user["email"])
+                
+                """reg = requests.put(create_user_url,
                                    json={"email": user["email"],
                                          "password": dummy_password,
                                          "callback_url": "dummy"})
@@ -83,7 +85,7 @@ class PTMigrate(object):
                 user_data = requests.post(verify_url)
                 self.user_map[user["user_id"]] = user_data.json()["id"]
 
-                print("Success: ", user["user_id"])
+                print("Success: ", user["user_id"])"""
 
             except Exception as e:
                 print("FAILURE: ", user["user_id"])
@@ -113,7 +115,8 @@ class PTMigrate(object):
 
                 upload_url = "{api}/upload_image".format(api=self.new_api)
                 new_image = requests.post(upload_url,
-                                          files=data_from_url(image["link"]),
+                                          files=data_from_url(image["link"], image['width'],
+                                                              image['height']),
                                           auth=(new_user_id, dummy_password)).json()
 
                 meta = dict(rights=image["permission"],
