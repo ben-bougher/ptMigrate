@@ -5,11 +5,10 @@ new_url = 'dummy'
 user_map = 'user_map.json'
 
 mig = PTMigrate(old_url, new_url)
-mig.migrate_users(mapfile='dummy')
+mig.migrate_users(mapfile=usermap)
 
 #mig = PTMigrate(old_url, new_url, user_file=user_map)
-
-#mig.migrate_images()
+mig.migrate_images()
 
 
 
